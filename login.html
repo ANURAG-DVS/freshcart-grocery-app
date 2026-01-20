@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshCart - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* BRAND SECTION */
+        .brand-section {
+            flex: 0 0 45%;
+            background: linear-gradient(135deg, #10B981, #14B8A6, #06B6D4);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            color: white;
+        }
+
+        .brand-section::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px, 80px 80px;
+            opacity: 0.5;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .floating-shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+        }
+
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            top: 60%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            bottom: 20%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 2;
+            max-width: 500px;
+        }
+
+        .brand-logo {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .brand-headline {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .brand-subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 48px;
+        }
+
+        .brand-illustration {
+            margin-bottom: 48px;
+            font-size: 80px;
+            opacity: 0.8;
+            animation: bounce 4s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .trust-indicators {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* LOGIN SECTION */
+        .login-section {
+            flex: 0 0 55%;
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px var(--shadow-light), 0 0 1px var(--border-gray);
+            padding: 56px 48px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-teal), var(--accent-blue));
+            border-radius: 24px 24px 0 0;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .time-greeting {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            color: var(--text-medium);
+            margin-bottom: 16px;
+        }
+
+        .security-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary-green);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 56px;
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 0 48px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--white);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input.error {
+            border-color: var(--error-red);
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+            animation: shake 400ms ease;
+        }
+
+        .form-input.success {
+            border-color: var(--success-green);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 48px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 200ms ease;
+            pointer-events: none;
+            color: var(--text-light);
+            background: var(--white);
+            padding: 0 4px;
+        }
+
+        .form-input:focus + .floating-label,
+        .form-input:not(:placeholder-shown) + .floating-label {
+            top: 0;
+            font-size: 12px;
+            color: var(--primary-green);
+            transform: translateY(-50%);
+            font-weight: 600;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--text-medium);
+            pointer-events: none;
+        }
+
+        .form-input:focus ~ .input-icon {
+            color: var(--primary-green);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+            user-select: none;
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--text-medium);
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-green);
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 6px;
+            margin-left: 4px;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .forgot-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--error-red);
+            font-size: 14px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 300ms ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+       }
+
+        .checkmark {
+            position: absolute;
+            right: 16px;
+            top: 18px;
+            color: var(--success-green);
+            font-size: 18px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 300ms ease;
+        }
+
+        .checkmark.show {
+            opacity: 1;
+            transform: scale(1);
+            animation: bounceIn 0.5s ease;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        .custom-checkbox.checked {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        .custom-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            animation: checkPop 300ms ease;
+        }
+
+        .remember-label {
+            font-size: 14px;
+            color: var(--text-medium);
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-teal));
+            border: none;
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 300ms ease;
+            margin-bottom: 24px;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 500ms;
+        }
+
+        .login-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px var(--shadow-heavy);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: var(--text-medium);
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-gray);
+        }
+
+        .divider::before { margin-right: 16px; }
+        .divider::after { margin-left: 16px; }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            height: 48px;
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            background: var(--white);
+            color: var(--text-dark);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 300ms ease;
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .new-user {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .new-user-text {
+            font-size: 16px;
+            color: var(--text-medium);
+            margin-bottom: 8px;
+        }
+
+        .register-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 200ms ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .register-link:hover {
+            color: var(--secondary-teal);
+            transform: scale(1.05);
+        }
+
+        .security-footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .demo-credentials {
+            margin-top: 24px;
+            padding: 16px;
+            background: var(--background);
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .demo-toggle {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--primary-green);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .demo-toggle:hover {
+            color: var(--secondary-teal);
+        }
+
+        .demo-content {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .demo-content.show {
+            display: block;
+            animation: fadeIn 300ms ease;
+        }
+
+        .demo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--text-medium);
+        }
+
+        .demo-label {
+            font-weight: 500;
+        }
+
+        .demo-value {
+            font-family: monospace;
+            background: rgba(0,0,0,0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--text-dark);
+        }
+
+        .error-alert {
+            background: #FEE2E2;
+            border-left: 4px solid var(--error-red);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transition: all 300ms ease;
+        }
+
+        .error-alert.show {
+            opacity: 1;
+            animation: slideDown 300ms ease;
+        }
+
+        .error-alert-icon {
+            color: var(--error-red);
+            font-size: 20px;
+        }
+
+        .error-alert-text {
+            color: #991B1B;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .caps-warning {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            right: 0;
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #92400E;
+            display: none;
+        }
+
+        .caps-warning.show {
+            display: block;
+            animation: slideDown 200ms ease;
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 300ms ease;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .success-content {
+            text-align: center;
+            color: white;
+            animation: scaleIn 400ms ease;
+        }
+
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            border: 4px solid #10B981;
+        }
+
+        .icon-line {
+            height: 5px;
+            background-color: #10B981;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+
+        .line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+
+        @keyframes icon-line-tip {
+            0% { width: 0; left: 1px; top: 19px; }
+            54% { width: 0; left: 1px; top: 19px; }
+            70% { width: 50px; left: -8px; top: 37px; }
+            84% { width: 17px; left: 21px; top: 48px; }
+            100% { width: 25px; left: 14px; top: 45px; }
+        }
+
+        @keyframes icon-line-long {
+            0% { width: 0; right: 46px; top: 54px; }
+            65% { width: 0; right: 46px; top: 54px; }
+            84% { width: 55px; right: 0px; top: 35px; }
+            100% { width: 47px; right: 8px; top: 38px; }
+        }
+
+        .icon-circle {
+            top: -4px;
+            left: -4px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            border: 4px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .success-message {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .success-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .redirect-text {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #FFD700;
+            animation: confettiFall 3s linear infinite;
+            pointer-events: none;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 767px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .brand-section {
+                min-height: 140px;
+                padding: 24px 20px;
+                text-align: center;
+            }
+
+            .brand-headline {
+                font-size: 32px;
+            }
+
+            .brand-subtitle {
+                font-size: 14px;
+            }
+
+            .floating-shape {
+                display: none;
+            }
+
+            .login-section {
+                padding: 24px 20px;
+            }
+
+            .login-card {
+                padding: 32px 24px;
+            }
+
+            .login-btn,
+            .form-input {
+                height: 52px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- BRAND SECTION -->
+        <div class="brand-section">
+            <div class="floating-shapes">
+                <div class="floating-shape shape-1"></div>
+                <div class="floating-shape shape-2"></div>
+                <div class="floating-shape shape-3"></div>
+            </div>
+
+            <div class="brand-content">
+                <div class="brand-logo">FreshCart</div>
+                <h1 class="brand-headline">Welcome Back!</h1>
+                <p class="brand-subtitle">Login to continue your grocery journey</p>
+
+                <div class="brand-illustration">
+                    🛒🛍️🚚
+                </div>
+
+                <div class="trust-indicators">
+                    <div class="trust-item">
+                        <span>🔒</span>
+                        <span>Secure Login</span>
+                    </div>
+                    <div class="trust-item">
+                        <span>⚡</span>
+                        <span>Fast Checkout</span>
+                    </div>
+                    <div class="trust-item">
+                        <span>🎁</span>
+                        <span>Exclusive Offers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN SECTION -->
+        <div class="login-section">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="time-greeting" id="timeGreeting">Good Morning</div>
+                    <p class="login-subtitle">Enter your credentials to access your account</p>
+                    <div class="security-badge">🔐 Secure Login</div>
+                </div>
+
+                <!-- Error Alert -->
+                <div class="error-alert" id="errorAlert">
+                    <div class="error-alert-icon">⚠️</div>
+                    <div class="error-alert-text" id="errorMessage">Invalid credentials</div>
+                </div>
+
+                <form id="loginForm">
+                    <!-- Customer ID -->
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="customerId" class="form-input" maxlength="13" placeholder=" " required>
+                            <label for="customerId" class="floating-label">Customer ID</label>
+                            <span class="input-icon">🆔</span>
+                            <span class="checkmark">✓</span>
+                        </div>
+                        <div class="input-hint">Use the ID from your registration confirmation</div>
+                        <div class="error-message">
+                            <span>⚠️</span>
+                            <span>ID not valid</span>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="password" id="password" class="form-input" maxlength="30" placeholder=" " required>
+                            <label for="password" class="floating-label">Password</label>
+                            <span class="input-icon">🔒</span>
+                            <button type="button" class="password-toggle" id="passwordToggle">👁️</button>
+                            <span class="checkmark">✓</span>
+                            <div class="caps-warning" id="capsWarning">
+                                ⚠️ Caps Lock is ON
+                            </div>
+                        </div>
+                        <div class="forgot-password">
+                            <a href="#" class="forgot-link">Forgot Password?</a>
+                        </div>
+                        <div class="error-message">
+                            <span>⚠️</span>
+                            <span>Password not valid</span>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="remember-me">
+                        <div class="custom-checkbox" id="rememberMe"></div>
+                        <label for="rememberMe" class="remember-label">Remember me for 30 days</label>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <span class="btn-text">Login to Account</span>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="divider">OR</div>
+
+                    <!-- Social Login -->
+                    <div class="social-login">
+                        <button type="button" class="social-btn google">
+                            <span>🌐</span>
+                            Continue with Google
+                        </button>
+                        <button type="button" class="social-btn">
+                            <span>📱</span>
+                            Continue with Phone
+                        </button>
+                    </div>
+
+                    <!-- New User -->
+                    <div class="new-user">
+                        <div class="new-user-text">New User?</div>
+                        <a href="registration.html" class="register-link">
+                            Register Yourself
+                            <span>→</span>
+                        </a>
+                    </div>
+
+                    <!-- Security Footer -->
+                    <div class="security-footer">
+                        🔒 Your data is encrypted and secure
+                    </div>
+
+                    <!-- Demo Credentials -->
+                    <div class="demo-credentials">
+                        <button type="button" class="demo-toggle" id="demoToggle">
+                            View Demo Credentials
+                        </button>
+                        <div class="demo-content" id="demoContent">
+                            <div class="demo-item">
+                                <span class="demo-label">Customer ID:</span>
+                                <span class="demo-value" id="demoCustomerId">Loading...</span>
+                            </div>
+                            <div class="demo-item">
+                                <span class="demo-label">Password:</span>
+                                <span class="demo-value" id="demoPassword">demo123</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-checkmark">
+                <div class="check-icon">
+                    <span class="icon-line line-tip"></span>
+                    <span class="icon-line line-long"></span>
+                    <div class="icon-circle"></div>
+                    <div class="icon-fix"></div>
+                </div>
+            </div>
+            <div class="success-message">Login Successful!</div>
+            <div class="success-subtitle">Welcome back to FreshCart</div>
+            <div class="redirect-text">Redirecting to home page...</div>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>
