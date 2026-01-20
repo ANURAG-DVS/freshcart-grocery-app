@@ -84,7 +84,7 @@ class LoginManager {
     toggleRememberMe() {
         const checkbox = document.querySelector('.custom-checkbox');
         checkbox.classList.toggle('checked');
-        
+
         if (!checkbox.classList.contains('checked')) {
             localStorage.removeItem('rememberedCustomerId');
         }
@@ -227,6 +227,21 @@ class LoginManager {
     }
 
     authenticate(customerId, password) {
+        // HARDCODED TEST USER - Works on any system without registration!
+        // Customer ID: demo
+        // Password: Demo@123
+        if (customerId.toLowerCase() === 'demo' && password === 'Demo@123') {
+            const testCustomer = {
+                customerId: 'demo',
+                name: 'Demo User',
+                email: 'demo@freshcart.com',
+                contact: '9999999999',
+                address: '123 Demo Street, Test City',
+                registrationDate: new Date().toISOString()
+            };
+            return { success: true, customer: testCustomer };
+        }
+
         // Get registrations from localStorage
         const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
 
@@ -261,7 +276,7 @@ class LoginManager {
         const errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = message;
         this.errorAlert.classList.add('show');
-         
+
         // Auto-hide after 5 seconds
         setTimeout(() => this.hideError(), 5000);
     }

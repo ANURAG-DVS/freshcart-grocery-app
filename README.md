@@ -63,11 +63,26 @@ FreshCart/
 
 ## 🔑 Test Credentials
 
-For testing the application, use these pre-configured credentials:
+### ⭐ Universal Demo Account (Works on ANY system!)
 
-**Customer Account:**
-- **Customer ID**: `CUS-691828`
-- **Password**: `Test@123`
+For **instant testing without registration**, use these hardcoded credentials:
+
+> **Customer ID**: `demo`  
+> **Password**: `Demo@123`
+
+✅ **No registration needed** - Works immediately after cloning  
+✅ **No localStorage dependency** - Works on any new PC/system  
+✅ **Perfect for demos** - Share with anyone to test the app
+
+---
+
+### Alternative: Create Your Own Account
+
+You can also register a new account through `registration.html` which will:
+1. Generate a unique Customer ID (e.g., `CUS-691828`)
+2. Store credentials in your browser's localStorage
+3. Work only on that specific browser/device
+
 
 ## 📖 Usage Guide
 
@@ -85,8 +100,8 @@ For testing the application, use these pre-configured credentials:
 
 ### Login Flow
 1. Open `login.html`
-2. Enter Customer ID: `CUS-691828`
-3. Enter Password: `Test@123`
+2. Enter Customer ID: `demo`
+3. Enter Password: `Demo@123`
 4. Click "Login to Account"
 5. Redirected to personalized home page
 
