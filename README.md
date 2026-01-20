@@ -67,7 +67,7 @@ FreshCart/
 
 For **instant testing without registration**, use these hardcoded credentials:
 
-> **Customer ID**: `demo`  
+> **Customer ID**: `CUS-691828`  
 > **Password**: `Demo@123`
 
 ✅ **No registration needed** - Works immediately after cloning  
@@ -79,9 +79,10 @@ For **instant testing without registration**, use these hardcoded credentials:
 ### Alternative: Create Your Own Account
 
 You can also register a new account through `registration.html` which will:
-1. Generate a unique Customer ID (e.g., `CUS-691828`)
+1. Generate a unique Customer ID (e.g., `CUS-542891`)
 2. Store credentials in your browser's localStorage
 3. Work only on that specific browser/device
+
 
 
 ## 📖 Usage Guide
@@ -100,7 +101,7 @@ You can also register a new account through `registration.html` which will:
 
 ### Login Flow
 1. Open `login.html`
-2. Enter Customer ID: `demo`
+2. Enter Customer ID: `CUS-691828`
 3. Enter Password: `Demo@123`
 4. Click "Login to Account"
 5. Redirected to personalized home page

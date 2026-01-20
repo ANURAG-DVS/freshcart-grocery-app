@@ -228,11 +228,11 @@ class LoginManager {
 
     authenticate(customerId, password) {
         // HARDCODED TEST USER - Works on any system without registration!
-        // Customer ID: demo
+        // Customer ID: CUS-691828
         // Password: Demo@123
-        if (customerId.toLowerCase() === 'demo' && password === 'Demo@123') {
+        if (customerId === 'CUS-691828' && password === 'Demo@123') {
             const testCustomer = {
-                customerId: 'demo',
+                customerId: 'CUS-691828',
                 name: 'Demo User',
                 email: 'demo@freshcart.com',
                 contact: '9999999999',
