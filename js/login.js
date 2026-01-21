@@ -2,7 +2,7 @@
 class LoginManager {
     constructor() {
         this.form = document.getElementById('loginForm');
-        this.customerIdInput = document.getElementById('customerId');
+        this.usernameInput = document.getElementById('username');
         this.passwordInput = document.getElementById('password');
         this.rememberMeCheckbox = document.getElementById('rememberMe');
         this.loginButton = document.getElementById('loginBtn');
@@ -17,15 +17,15 @@ class LoginManager {
     }
 
     init() {
-        // Load saved Customer ID if "Remember Me" was checked
+        // Load saved username if "Remember Me" was checked
         this.loadSavedCredentials();
 
         // Auto-focus first field
-        this.customerIdInput.focus();
+        this.usernameInput.focus();
 
         // Real-time validation on blur
-        this.customerIdInput.addEventListener('blur', () => {
-            this.validateCustomerId();
+        this.usernameInput.addEventListener('blur', () => {
+            this.validateUsername();
         });
 
         this.passwordInput.addEventListener('blur', () => {
@@ -44,7 +44,7 @@ class LoginManager {
         });
 
         // Enter key support
-        this.customerIdInput.addEventListener('keypress', (e) => {
+        this.usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.passwordInput.focus();
         });
 
@@ -56,25 +56,12 @@ class LoginManager {
         this.rememberMeCheckbox.addEventListener('click', () => {
             this.toggleRememberMe();
         });
-
-        // Customer ID formatting
-        this.customerIdInput.addEventListener('input', (e) => {
-            let value = e.target.value.toUpperCase().replace(/[^CUS0-9-]/g, '');
-            // Auto-format to CUS-XXXXXX
-            if (value.startsWith('CUS') && value.length > 3) {
-                const numbers = value.slice(3).replace(/-/g, '');
-                if (numbers.length > 0) {
-                    value = 'CUS-' + numbers.slice(0, 6);
-                }
-            }
-            e.target.value = value.slice(0, 10); // CUS-XXXXXX = 10 chars
-        });
     }
 
     loadSavedCredentials() {
-        const savedId = localStorage.getItem('rememberedCustomerId');
-        if (savedId) {
-            this.customerIdInput.value = savedId;
+        const savedUsername = localStorage.getItem('rememberedUsername');
+        if (savedUsername) {
+            this.usernameInput.value = savedUsername;
             const checkbox = document.querySelector('.custom-checkbox');
             checkbox.classList.add('checked');
             this.passwordInput.focus();
@@ -86,25 +73,25 @@ class LoginManager {
         checkbox.classList.toggle('checked');
 
         if (!checkbox.classList.contains('checked')) {
-            localStorage.removeItem('rememberedCustomerId');
+            localStorage.removeItem('rememberedUsername');
         }
     }
 
-    validateCustomerId() {
-        const customerId = this.customerIdInput.value.trim();
-        const isValid = /^CUS-\d{6}$/.test(customerId);
+    validateUsername() {
+        const username = this.usernameInput.value.trim();
+        const isValid = /^[a-zA-Z0-9_]{3,20}$/.test(username);
 
-        if (customerId === '') {
-            this.showFieldError(this.customerIdInput, '');
+        if (username === '') {
+            this.showFieldError(this.usernameInput, '');
             return false;
         }
 
         if (!isValid) {
-            this.showFieldError(this.customerIdInput, 'ID format should be CUS-123456');
+            this.showFieldError(this.usernameInput, 'Username must be 3-20 characters (letters, numbers, _)');
             return false;
         }
 
-        this.showFieldSuccess(this.customerIdInput);
+        this.showFieldSuccess(this.usernameInput);
         return true;
     }
 
@@ -181,15 +168,15 @@ class LoginManager {
         this.hideError();
 
         // Validate fields
-        const isIdValid = this.validateCustomerId();
+        const isUsernameValid = this.validateUsername();
         const isPwdValid = this.validatePassword();
 
-        if (!isIdValid || !isPwdValid) {
+        if (!isUsernameValid || !isPwdValid) {
             this.showError('Please fill in all fields correctly');
             return;
         }
 
-        const customerId = this.customerIdInput.value.trim();
+        const username = this.usernameInput.value.trim().toLowerCase(); // Case-insensitive
         const password = this.passwordInput.value;
 
         // Show loading state
@@ -198,68 +185,84 @@ class LoginManager {
         // Simulate API call delay
         await this.delay(1000);
 
-        // Authenticate
-        const result = this.authenticate(customerId, password);
+        try {
+            // Authenticate
+            const result = await this.authenticate(username, password);
 
-        if (result.success) {
-            // Save Customer ID if Remember Me is checked
-            const checkbox = document.querySelector('.custom-checkbox');
-            if (checkbox.classList.contains('checked')) {
-                localStorage.setItem('rememberedCustomerId', customerId);
-            }
+            if (result.success) {
+                // Save username if Remember Me is checked
+                const checkbox = document.querySelector('.custom-checkbox');
+                if (checkbox.classList.contains('checked')) {
+                    localStorage.setItem('rememberedUsername', username);
+                }
 
-            // Save current user session
-            localStorage.setItem('currentUser', JSON.stringify(result.customer));
+                // Save current user session
+                localStorage.setItem('currentUser', JSON.stringify(result.customer));
 
-            // Show success animation
-            this.showSuccessAnimation();
-        } else {
-            this.setLoadingState(false);
-            this.attemptCount++;
-
-            // Check if should lock out
-            if (this.attemptCount >= this.maxAttempts) {
-                this.lockout();
+                // Show success animation
+                this.showSuccessAnimation();
             } else {
-                this.showError(result.error);
+                this.setLoadingState(false);
+                this.attemptCount++;
+
+                // Check if should lock out
+                if (this.attemptCount >= this.maxAttempts) {
+                    this.lockout();
+                } else {
+                    this.showError(result.error);
+                }
             }
+        } catch (error) {
+            this.setLoadingState(false);
+            this.showError('Authentication failed. Please try again.');
+            console.error('Authentication error:', error);
         }
     }
 
-    authenticate(customerId, password) {
-        // HARDCODED TEST USER - Works on any system without registration!
-        // Customer ID: CUS-691828
-        // Password: Demo@123
-        if (customerId === 'CUS-691828' && password === 'Demo@123') {
-            const testCustomer = {
-                customerId: 'CUS-691828',
-                name: 'Demo User',
-                email: 'demo@freshcart.com',
-                contact: '9999999999',
-                address: '123 Demo Street, Test City',
-                registrationDate: new Date().toISOString()
-            };
-            return { success: true, customer: testCustomer };
-        }
-
+    authenticate(username, password) {
         // Get registrations from localStorage
         const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
 
-        // Find customer by ID
-        const customer = registrations.find(reg => reg.customerId === customerId);
+        // Find customer by username (case-insensitive)
+        const customer = registrations.find(reg =>
+            reg.username && reg.username.toLowerCase() === username.toLowerCase()
+        );
 
         if (!customer) {
-            return { success: false, error: 'Customer ID not found' };
+            return { success: false, error: 'Username not found' };
         }
 
-        // Get stored password (in production, this would be hashed)
-        const storedPassword = localStorage.getItem(`pwd_${customerId}`);
+        // Get stored password (SHA-256 hashed)
+        const storedPasswordHash = customer.password;
 
-        if (storedPassword !== password) {
-            return { success: false, error: 'Incorrect password' };
-        }
+        // Hash input password for comparison
+        return this.hashPassword(password).then(inputHash => {
+            if (storedPasswordHash !== inputHash) {
+                return { success: false, error: 'Password not valid' };
+            }
 
-        return { success: true, customer };
+            // Update last login time
+            customer.lastLogin = new Date().toISOString();
+
+            // Save updated customer data
+            const updatedRegistrations = registrations.map(reg =>
+                reg.username && reg.username.toLowerCase() === username.toLowerCase() ? customer : reg
+            );
+            localStorage.setItem('registrations', JSON.stringify(updatedRegistrations));
+
+            // Return session data
+            const sessionUser = {
+                customerId: customer.customerId,
+                username: customer.username,
+                name: customer.name,
+                email: customer.email,
+                contact: customer.contact,
+                address: customer.address,
+                loginTime: new Date().toISOString()
+            };
+
+            return { success: true, customer: sessionUser };
+        });
     }
 
     setLoadingState(isLoading) {
@@ -336,6 +339,40 @@ class LoginManager {
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+
+    // Hash password using SHA-256
+    async hashPassword(password) {
+        try {
+            // Check if crypto.subtle is available
+            if (!crypto || !crypto.subtle) {
+                console.warn('crypto.subtle not available, using fallback hashing');
+                // Fallback: simple hash for demo purposes (NOT secure for production!)
+                return await simpleHash(password);
+            }
+
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            // Fallback to simple hash
+            return await simpleHash(password);
+        }
+    }
+
+    // Simple fallback hash (NOT secure - for demo only!)
+    async simpleHash(password) {
+        let hash = 0;
+        for (let i = 0; i < password.length; i++) {
+            const char = password.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash).toString(16);
+    }
 }
 
 // PASSWORD TOGGLE FUNCTIONALITY
@@ -375,36 +412,6 @@ function createRipple(event) {
     setTimeout(() => ripple.remove(), 600);
 }
 
-// DEMO CREDENTIALS FUNCTIONALITY
-function setupDemoCredentials() {
-    const demoToggle = document.getElementById('demoToggle');
-    const demoContent = document.getElementById('demoContent');
-    const demoCustomerId = document.getElementById('demoCustomerId');
-
-    demoToggle.addEventListener('click', () => {
-        if (demoContent.classList.contains('show')) {
-            demoContent.classList.remove('show');
-            demoToggle.textContent = 'View Demo Credentials';
-        } else {
-            demoContent.classList.add('show');
-            demoToggle.textContent = 'Hide Demo Credentials';
-        }
-    });
-
-    // Load demo credentials
-    try {
-        const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
-        if (registrations.length > 0) {
-            demoCustomerId.textContent = registrations[0].customerId;
-        } else {
-            demoCustomerId.textContent = 'Register first to get an ID';
-        }
-    } catch (error) {
-        console.error('Error loading demo credentials:', error);
-        demoCustomerId.textContent = 'CUS-123456';
-    }
-}
-
 // SET TIME-BASED GREETING
 function setGreeting() {
     const hour = new Date().getHours();
@@ -419,7 +426,6 @@ function setGreeting() {
 document.addEventListener('DOMContentLoaded', () => {
     new LoginManager();
     setupPasswordToggle();
-    setupDemoCredentials();
     setGreeting();
 
     // Add ripple effect to login button

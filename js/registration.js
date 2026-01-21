@@ -1,6 +1,7 @@
 // Registration form validation and submission
 // Validation regex patterns
 const nameRegex = /^[A-Za-z\s]+$/;
+const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const emailRegex = /@/;
 const passwordRegex = {
     length: /.{5,}/,
@@ -15,7 +16,7 @@ let formValid = false;
 let termsAccepted = false;
 
 // DOM Elements
-let form, customerNameInput, emailInput, passwordInput, addressTextarea;
+let form, customerNameInput, usernameInput, emailInput, passwordInput, addressTextarea;
 let contactNumberInput, termsCheckbox, submitBtn, passwordToggle;
 let strengthFill, strengthText, successModal;
 
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get DOM elements
     form = document.getElementById('registrationForm');
     customerNameInput = document.getElementById('customerName');
+    usernameInput = document.getElementById('username');
     emailInput = document.getElementById('email');
     passwordInput = document.getElementById('password');
     addressTextarea = document.getElementById('address');
@@ -64,6 +66,7 @@ function setupEventListeners() {
 
     // Real-time validation
     customerNameInput.addEventListener('blur', validateName);
+    usernameInput.addEventListener('blur', validateUsername);
     emailInput.addEventListener('blur', validateEmail);
     passwordInput.addEventListener('input', () => {
         checkPasswordStrength(passwordInput.value);
@@ -73,7 +76,7 @@ function setupEventListeners() {
     contactNumberInput.addEventListener('blur', validateContact);
 
     // Form validation on input
-    [customerNameInput, emailInput, passwordInput, addressTextarea, contactNumberInput].forEach(input => {
+    [customerNameInput, usernameInput, emailInput, passwordInput, addressTextarea, contactNumberInput].forEach(input => {
         input.addEventListener('input', validateForm);
         input.addEventListener('blur', validateForm);
     });
@@ -126,6 +129,11 @@ function handleCharacterCounters() {
     customerNameInput.addEventListener('input', () => {
         const counter = customerNameInput.parentElement.querySelector('.char-counter');
         counter.textContent = `${customerNameInput.value.length}/50`;
+    });
+
+    usernameInput.addEventListener('input', () => {
+        const counter = usernameInput.parentElement.querySelector('.char-counter');
+        counter.textContent = `${usernameInput.value.length}/20`;
     });
 
     passwordInput.addEventListener('input', () => {
@@ -195,6 +203,56 @@ function validateField(input, regex, errorMessage) {
 
 function validateName() {
     return validateField(customerNameInput, nameRegex, 'Customer Name must have alphabets only');
+}
+
+function validateUsername() {
+    const username = usernameInput.value.trim();
+    const wrapper = usernameInput.parentElement.parentElement;
+    const errorDiv = wrapper.querySelector('.error-message');
+    const checkmark = wrapper.querySelector('.checkmark');
+
+    if (username === '') {
+        usernameInput.classList.remove('error', 'success');
+        if (errorDiv) errorDiv.classList.remove('show');
+        if (checkmark) checkmark.classList.remove('show');
+        return false;
+    }
+
+    // Check format (alphanumeric + underscore, 3-20 chars)
+    if (!usernameRegex.test(username)) {
+        usernameInput.classList.remove('success');
+        usernameInput.classList.add('error');
+        if (errorDiv) {
+            errorDiv.querySelector('span:last-child').textContent = 'Username must be 3-20 characters (letters, numbers, _)';
+            errorDiv.classList.add('show');
+        }
+        if (checkmark) checkmark.classList.remove('show');
+        return false;
+    }
+
+    // Check for duplicate username (case-insensitive)
+    const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+    const usernameExists = registrations.some(user =>
+        user.username && user.username.toLowerCase() === username.toLowerCase()
+    );
+
+    if (usernameExists) {
+        usernameInput.classList.remove('success');
+        usernameInput.classList.add('error');
+        if (errorDiv) {
+            errorDiv.querySelector('span:last-child').textContent = 'Username already taken. Please choose another.';
+            errorDiv.classList.add('show');
+        }
+        if (checkmark) checkmark.classList.remove('show');
+        return false;
+    }
+
+    // Valid username
+    usernameInput.classList.remove('error');
+    usernameInput.classList.add('success');
+    if (errorDiv) errorDiv.classList.remove('show');
+    if (checkmark) checkmark.classList.add('show');
+    return true;
 }
 
 function validateEmail() {
@@ -293,17 +351,31 @@ function validateContact() {
 
 function validateForm() {
     const nameValid = customerNameInput.value.trim() !== '' && validateName();
+    const usernameValid = usernameInput.value.trim() !== '' && validateUsername();
     const emailValid = emailInput.value.trim() !== '' && validateEmail();
     const passwordValid = passwordInput.value.trim() !== '' && validatePassword();
     const addressValid = addressTextarea.value.trim() !== '' && validateAddress();
     const contactValid = contactNumberInput.value.trim() !== '' && validateContact();
 
-    formValid = nameValid && emailValid && passwordValid && addressValid && contactValid && termsAccepted;
+    formValid = nameValid && usernameValid && emailValid && passwordValid && addressValid && contactValid && termsAccepted;
     submitBtn.disabled = !formValid;
 }
 
 function generateCustomerId() {
-    return 'CUS-' + Math.floor(100000 + Math.random() * 900000);
+    let customerId;
+    let exists = true;
+
+    while (exists) {
+        // Generate random 6-digit number
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        customerId = `CUS-${randomNum}`;
+
+        // Check if this ID already exists
+        const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+        exists = registrations.some(user => user.customerId === customerId);
+    }
+
+    return customerId;
 }
 
 function createConfetti() {
@@ -320,17 +392,18 @@ function createConfetti() {
     }
 }
 
-function handleSubmit(e) {
+async function handleSubmit(e) {
     e.preventDefault();
 
     // Validate all fields
     const nameValid = validateName();
+    const usernameValid = validateUsername();
     const emailValid = validateEmail();
     const passwordValid = validatePassword();
     const addressValid = validateAddress();
     const contactValid = validateContact();
 
-    const isFormValid = nameValid && emailValid && passwordValid && addressValid && contactValid && termsAccepted;
+    const isFormValid = nameValid && usernameValid && emailValid && passwordValid && addressValid && contactValid && termsAccepted;
 
     if (!isFormValid) {
         return;
@@ -340,36 +413,47 @@ function handleSubmit(e) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<div class="btn-loading"><div class="spinner"></div>Registering...</div>';
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
         const customerId = generateCustomerId();
-
-        // Save to localStorage
-        const registrationData = {
-            customerId: customerId,
+        const formData = {
+            username: usernameInput.value.trim().toLowerCase(), // Store as lowercase
             name: customerNameInput.value.trim(),
-            email: emailInput.value.trim(),
+            email: emailInput.value.trim().toLowerCase(),
+            password: passwordInput.value,
             address: addressTextarea.value.trim(),
-            contact: contactNumberInput.value.trim(),
-            registrationDate: new Date().toISOString()
+            contact: contactNumberInput.value.trim()
         };
 
-        // Save password separately (in production, hash this!)
-        localStorage.setItem(`pwd_${customerId}`, passwordInput.value);
+        // Register user with secure storage
+        const result = await registerUser(formData);
 
-        // Save to registrations array
-        const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
-        registrations.push(registrationData);
-        localStorage.setItem('registrations', JSON.stringify(registrations));
+        if (!result.success) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-text">Create Account</span>';
+            showToast(result.error, 'error');
+            return;
+        }
 
         // Update modal with form data
-        document.getElementById('displayName').textContent = registrationData.name;
-        document.getElementById('displayEmail').textContent = registrationData.email;
-        document.getElementById('customerId').textContent = `ID: #${customerId}`;
+        document.getElementById('displayUsername').textContent = result.username;
+        document.getElementById('displayName').textContent = result.name;
+        document.getElementById('displayEmail').textContent = result.email;
+        document.getElementById('customerId').textContent = result.customerId;
 
-        // Show success modal
-        successModal.classList.add('show');
-        createConfetti();
+        // Show success animation first
+        const successOverlay = document.getElementById('successOverlay');
+        successOverlay.classList.add('show');
+
+        // After animation, show the modal with details
+        setTimeout(() => {
+            successOverlay.classList.remove('show');
+
+            // Show success modal with user details
+            setTimeout(() => {
+                successModal.classList.add('show');
+                createConfetti();
+            }, 300);
+        }, 2000); // Show animation for 2 seconds
 
         // Reset form
         form.reset();
@@ -387,7 +471,13 @@ function handleSubmit(e) {
         // Reset button
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<span class="btn-text">Create Account</span>';
-    }, 2000);
+
+    } catch (error) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="btn-text">Create Account</span>';
+        showToast('Registration failed. Please try again.', 'error');
+        console.error('Registration error:', error);
+    }
 }
 
 function createRippleEffect(e) {
@@ -404,4 +494,171 @@ function createRippleEffect(e) {
 
     this.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
+}
+
+async function registerUser(formData) {
+    // Generate unique Customer ID
+    const customerId = generateCustomerId();
+
+    // Hash password
+    const hashedPassword = await hashPassword(formData.password);
+
+    // Create user object
+    const newUser = {
+        customerId: customerId,
+        username: formData.username.trim().toLowerCase(), // Store username
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: hashedPassword, // Store hashed password
+        address: formData.address.trim(),
+        contact: formData.contact.trim(),
+        registeredAt: new Date().toISOString(),
+        lastLogin: null
+    };
+
+    // Get existing registrations
+    const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+
+    // Check if username already exists (case-insensitive)
+    const usernameExists = registrations.some(user =>
+        user.username && user.username.toLowerCase() === newUser.username.toLowerCase()
+    );
+    if (usernameExists) {
+        return {
+            success: false,
+            error: 'Username already taken. Please choose another.'
+        };
+    }
+
+    // Check if email already exists
+    const emailExists = registrations.some(user => user.email === newUser.email);
+    if (emailExists) {
+        return {
+            success: false,
+            error: 'Email already registered. Please login instead.'
+        };
+    }
+
+    // Add new user to registrations array
+    registrations.push(newUser);
+
+    // Save back to localStorage
+    localStorage.setItem('registrations', JSON.stringify(registrations));
+
+    // Return success with customer ID and username
+    return {
+        success: true,
+        customerId: customerId,
+        username: newUser.username,
+        name: newUser.name,
+        email: newUser.email
+    };
+}
+
+// Hash password using SHA-256
+async function hashPassword(password) {
+    try {
+        // Check if crypto.subtle is available
+        if (!crypto || !crypto.subtle) {
+            console.warn('crypto.subtle not available, using fallback hashing');
+            // Fallback: simple hash for demo purposes (NOT secure for production!)
+            return await simpleHash(password);
+        }
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        // Fallback to simple hash
+        return await simpleHash(password);
+    }
+}
+
+// Simple fallback hash (NOT secure - for demo only!)
+async function simpleHash(password) {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16);
+}
+
+// Show toast notifications
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#6B7280'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 4000;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    `;
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Copy Customer ID to clipboard
+function copyCustomerId() {
+    const customerIdElement = document.getElementById('customerId');
+    const customerId = customerIdElement.textContent;
+
+    navigator.clipboard.writeText(customerId).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.style.background = '#059669';
+
+        showToast('Customer ID copied to clipboard!', 'success');
+
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.background = '#10B981';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy Customer ID', 'error');
+    });
+}
+
+// Copy Username to clipboard
+function copyUsername() {
+    const usernameElement = document.getElementById('displayUsername');
+    const username = usernameElement.textContent;
+
+    navigator.clipboard.writeText(username).then(() => {
+        const copyBtn = document.getElementById('copyUsernameBtn');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.style.background = '#059669';
+
+        showToast('Username copied to clipboard!', 'success');
+
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.background = '#10B981';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy username', 'error');
+    });
+}
+
+// Navigate to login page
+function goToLogin() {
+    window.location.href = 'login.html';
 }

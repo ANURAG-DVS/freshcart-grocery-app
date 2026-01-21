@@ -565,12 +565,225 @@
             transform: translateY(-2px);
         }
 
+        .customer-id-card {
+            background: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .customer-id-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .copy-btn {
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        .user-details {
+            background: #F0FDF4;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .user-details p {
+            margin: 4px 0;
+            font-size: 14px;
+        }
+
         .confetti {
             position: absolute;
             width: 10px;
             height: 10px;
             top: -10px;
             animation: confettiFall 3s linear forwards;
+        }
+
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 300ms ease;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .success-content {
+            text-align: center;
+            color: white;
+            animation: scaleIn 400ms ease;
+        }
+
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            border: 4px solid #10B981;
+        }
+
+        .icon-line {
+            height: 5px;
+            background-color: #10B981;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+
+        .line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 45px;
+            }
+        }
+
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
+
+        .icon-circle {
+            top: -4px;
+            left: -4px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            border: 4px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .success-message {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .success-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 767px) {
@@ -639,6 +852,21 @@
                             <span class="checkmark">✓</span>
                         </div>
                         <div class="error-message"><span>⚠️</span><span>Customer Name must have alphabets only</span>
+                        </div>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="username" class="form-input" maxlength="20" placeholder=" "
+                                autocomplete="username">
+                            <label for="username" class="floating-label">Choose Username</label>
+                            <span class="input-icon">@</span>
+                            <span class="char-counter">0/20</span>
+                            <span class="checkmark">✓</span>
+                        </div>
+                        <div class="error-message"><span>⚠️</span><span>Username must be 3-20 characters (letters,
+                                numbers, _)</span>
                         </div>
                     </div>
 
@@ -724,20 +952,52 @@
     <!-- Success Modal -->
     <div class="modal" id="successModal">
         <div class="modal-content">
-            <div class="success-icon"></div>
-            <h2>Customer Registration Successful!</h2>
-            <div class="celebration">🎉</div>
-            <div class="customer-info">
-                <div class="customer-id" id="customerId">ID: #CUS-123456</div>
-                <div class="info-item"><span>👤</span><strong id="displayName">John Doe</strong></div>
-                <div class="info-item"><span>✉️</span><span id="displayEmail">john@example.com</span></div>
+            <div class="success-icon">✓</div>
+            <h2 style="color: #10B981;">Registration Successful!</h2>
+            <p style="color: #6B7280;">Your account has been created</p>
+
+            <div class="customer-id-card">
+                <p style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">
+                    Your Login Username
+                </p>
+                <div class="customer-id-display">
+                    <span style="font-size: 28px; font-weight: bold; color: #10B981;"
+                        id="displayUsername">username</span>
+                    <button onclick="copyUsername()" class="copy-btn" id="copyUsernameBtn">
+                        📋 Copy
+                    </button>
+                </div>
+                <p style="font-size: 13px; color: #EF4444; margin-top: 12px;">
+                    ⚠️ IMPORTANT: Save this username. You'll need it to login.
+                </p>
             </div>
+
+            <div class="user-details">
+                <p><strong>Name:</strong> <span id="displayName">John Doe</span></p>
+                <p><strong>Email:</strong> <span id="displayEmail">john@example.com</span></p>
+                <p><strong>Customer ID:</strong> <span id="customerId">CUS-123456</span> <span
+                        style="font-size: 12px; color: #6B7280;">(for reference)</span></p>
+            </div>
+
             <div class="modal-buttons">
-                <button class="modal-btn primary">Start Shopping</button>
-                <button class="modal-btn secondary">Go to Login</button>
+                <button class="modal-btn primary" onclick="goToLogin()">Proceed to Login</button>
             </div>
-            <div style="font-size: 14px; color: var(--text-gray); margin-top: 16px;">Check your email for a welcome
-                gift! 🎁</div>
+        </div>
+    </div>
+
+    <!-- Success Animation Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-checkmark">
+                <div class="check-icon">
+                    <span class="icon-line line-tip"></span>
+                    <span class="icon-line line-long"></span>
+                    <div class="icon-circle"></div>
+                    <div class="icon-fix"></div>
+                </div>
+            </div>
+            <div class="success-message">Registration Successful!</div>
+            <div class="success-subtitle">Creating your account...</div>
         </div>
     </div>
 
