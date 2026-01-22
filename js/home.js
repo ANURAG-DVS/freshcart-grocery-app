@@ -324,6 +324,10 @@ function toggleCart() {
     }
 }
 
+// Profile Modal State
+let isEditingProfile = false;
+let originalProfileData = null;
+
 function openProfileModal() {
     const modal = document.getElementById('profileModal');
     const content = document.getElementById('profileContent');
@@ -333,45 +337,8 @@ function openProfileModal() {
     const fullUser = registrations.find(user => user.customerId === currentUser.customerId);
 
     if (fullUser) {
-        const registeredDate = new Date(fullUser.registeredAt).toLocaleDateString();
-        const lastLoginDate = fullUser.lastLogin ? new Date(fullUser.lastLogin).toLocaleString() : 'Never';
-
-        content.innerHTML = `
-            <div style="display: grid; gap: 16px;">
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Username (Login)</div>
-                    <div style="font-size: 16px; font-weight: 600; color: var(--primary);">${fullUser.username || 'Not set'}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Customer ID</div>
-                    <div style="font-size: 16px; font-weight: 600; color: var(--text-light);">${fullUser.customerId}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Name</div>
-                    <div style="font-size: 16px; font-weight: 600;">${fullUser.name}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Email</div>
-                    <div style="font-size: 16px; font-weight: 600;">${fullUser.email}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Contact</div>
-                    <div style="font-size: 16px; font-weight: 600;">${fullUser.contact}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Address</div>
-                    <div style="font-size: 16px; font-weight: 600;">${fullUser.address}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Registered</div>
-                    <div style="font-size: 16px; font-weight: 600;">${registeredDate}</div>
-                </div>
-                <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                    <div style="font-size: 12px; color: var(--text-light);">Last Login</div>
-                    <div style="font-size: 16px; font-weight: 600;">${lastLoginDate}</div>
-                </div>
-            </div>
-        `;
+        originalProfileData = { ...fullUser };
+        renderProfileView(fullUser, content);
     } else {
         content.innerHTML = `
             <div style="text-align: center; padding: 40px;">
@@ -385,7 +352,371 @@ function openProfileModal() {
     modal.classList.add('show');
 }
 
+function renderProfileView(user, container) {
+    const registeredDate = new Date(user.registeredAt).toLocaleDateString();
+    const lastUpdated = user.lastUpdated ? new Date(user.lastUpdated).toLocaleString() : 'Never';
+
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <div style="font-size: 14px; color: var(--text-light);">Last updated: ${lastUpdated}</div>
+            </div>
+            <button onclick="enableProfileEdit()" style="padding: 10px 24px; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                ✏️ Edit Profile
+            </button>
+        </div>
+
+        <div style="display: grid; gap: 16px;">
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Customer ID</div>
+                <div style="font-size: 16px; font-weight: 600; color: var(--text-medium);">${user.customerId}</div>
+            </div>
+            
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Username</div>
+                <div style="font-size: 16px; font-weight: 600; color: var(--primary-green);">${user.username || 'Not set'}</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Name</div>
+                <div style="font-size: 16px; font-weight: 600;">${user.name}</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Email</div>
+                <div style="font-size: 16px; font-weight: 600;">${user.email}</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Contact</div>
+                <div style="font-size: 16px; font-weight: 600;">${user.contact}</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Address</div>
+                <div style="font-size: 16px; font-weight: 600;">${user.address}</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">Registered</div>
+                <div style="font-size: 16px; font-weight: 600;">${registeredDate}</div>
+            </div>
+        </div>
+    `;
+}
+
+function enableProfileEdit() {
+    isEditingProfile = true;
+    const content = document.getElementById('profileContent');
+    const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+    const user = registrations.find(u => u.customerId === currentUser.customerId);
+
+    if (!user) return;
+
+    content.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 16px; background: #FEF3C7; border-radius: var(--radius-md); border: 1px solid #F59E0B;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span>
+                <span style="font-weight: 600; color: #92400E;">Edit Mode Active</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="cancelProfileEdit()" style="padding: 8px 20px; background: white; color: var(--text-dark); border: 1px solid var(--border-gray); border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                    ✕ Cancel
+                </button>
+                <button onclick="saveProfileChanges()" style="padding: 8px 20px; background: var(--primary-green); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                    ✓ Save Changes
+                </button>
+            </div>
+        </div>
+
+        <div style="display: grid; gap: 20px;">
+            <!-- Customer ID (Read-only) -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Customer ID (Cannot be changed)
+                </label>
+                <div style="padding: 12px 16px; background: var(--bg-tertiary); border: 1px solid var(--border-gray); border-radius: var(--radius-md); color: var(--text-light); font-weight: 600;">
+                    ${user.customerId}
+                </div>
+            </div>
+
+            <!-- Username (Read-only) -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Username (Cannot be changed)
+                </label>
+                <div style="padding: 12px 16px; background: var(--bg-tertiary); border: 1px solid var(--border-gray); border-radius: var(--radius-md); color: var(--text-light); font-weight: 600;">
+                    ${user.username}
+                </div>
+            </div>
+
+            <!-- Name -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Full Name *
+                </label>
+                <input type="text" id="editName" value="${user.name}" 
+                    oninput="validateProfileField('name')"
+                    style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-gray); border-radius: var(--radius-md); font-size: 15px; outline: none; transition: all 0.2s;"
+                    placeholder="Enter your full name">
+                <div id="nameError" style="color: var(--error-red); font-size: 12px; margin-top: 4px; display: none;"></div>
+                <div id="nameSuccess" style="color: var(--success-green); font-size: 12px; margin-top: 4px; display: none;">✓ Valid name</div>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Email Address *
+                </label>
+                <input type="email" id="editEmail" value="${user.email}"
+                    oninput="validateProfileField('email')"
+                    style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-gray); border-radius: var(--radius-md); font-size: 15px; outline: none; transition: all 0.2s;"
+                    placeholder="Enter your email">
+                <div id="emailError" style="color: var(--error-red); font-size: 12px; margin-top: 4px; display: none;"></div>
+                <div id="emailSuccess" style="color: var(--success-green); font-size: 12px; margin-top: 4px; display: none;">✓ Valid email</div>
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Contact Number *
+                </label>
+                <input type="tel" id="editContact" value="${user.contact}"
+                    oninput="validateProfileField('contact')"
+                    maxlength="10"
+                    style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-gray); border-radius: var(--radius-md); font-size: 15px; outline: none; transition: all 0.2s;"
+                    placeholder="10-digit mobile number">
+                <div id="contactError" style="color: var(--error-red); font-size: 12px; margin-top: 4px; display: none;"></div>
+                <div id="contactSuccess" style="color: var(--success-green); font-size: 12px; margin-top: 4px; display: none;">✓ Valid contact</div>
+            </div>
+
+            <!-- Address -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-medium); margin-bottom: 8px;">
+                    Delivery Address *
+                </label>
+                <textarea id="editAddress" rows="3"
+                    oninput="validateProfileField('address')"
+                    style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-gray); border-radius: var(--radius-md); font-size: 15px; outline: none; transition: all 0.2s; resize: vertical; font-family: inherit;"
+                    placeholder="Enter your complete address">${user.address}</textarea>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <div id="addressError" style="color: var(--error-red); font-size: 12px; display: none;"></div>
+                    <div id="addressSuccess" style="color: var(--success-green); font-size: 12px; display: none;">✓ Valid address</div>
+                    <div id="addressCounter" style="font-size: 12px; color: var(--text-light);">0/200</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Initialize character counter
+    updateAddressCounter();
+}
+
+function validateProfileField(field) {
+    const nameInput = document.getElementById('editName');
+    const emailInput = document.getElementById('editEmail');
+    const contactInput = document.getElementById('editContact');
+    const addressInput = document.getElementById('editAddress');
+
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const contactError = document.getElementById('contactError');
+    const addressError = document.getElementById('addressError');
+
+    const nameSuccess = document.getElementById('nameSuccess');
+    const emailSuccess = document.getElementById('emailSuccess');
+    const contactSuccess = document.getElementById('contactSuccess');
+    const addressSuccess = document.getElementById('addressSuccess');
+
+    if (field === 'name') {
+        const name = nameInput.value.trim();
+        if (name.length < 3) {
+            nameInput.style.borderColor = 'var(--error-red)';
+            nameError.textContent = '⚠ Name must be at least 3 characters';
+            nameError.style.display = 'block';
+            nameSuccess.style.display = 'none';
+            return false;
+        } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+            nameInput.style.borderColor = 'var(--error-red)';
+            nameError.textContent = '⚠ Name can only contain letters and spaces';
+            nameError.style.display = 'block';
+            nameSuccess.style.display = 'none';
+            return false;
+        } else {
+            nameInput.style.borderColor = 'var(--success-green)';
+            nameError.style.display = 'none';
+            nameSuccess.style.display = 'block';
+            return true;
+        }
+    }
+
+    if (field === 'email') {
+        const email = emailInput.value.trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(email)) {
+            emailInput.style.borderColor = 'var(--error-red)';
+            emailError.textContent = '⚠ Please enter a valid email address';
+            emailError.style.display = 'block';
+            emailSuccess.style.display = 'none';
+            return false;
+        }
+
+        // Check if email is taken by another user
+        const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+        const emailTaken = registrations.some(user =>
+            user.email.toLowerCase() === email.toLowerCase() &&
+            user.customerId !== currentUser.customerId
+        );
+
+        if (emailTaken) {
+            emailInput.style.borderColor = 'var(--error-red)';
+            emailError.textContent = '⚠ This email is already registered to another account';
+            emailError.style.display = 'block';
+            emailSuccess.style.display = 'none';
+            return false;
+        }
+
+        emailInput.style.borderColor = 'var(--success-green)';
+        emailError.style.display = 'none';
+        emailSuccess.style.display = 'block';
+        return true;
+    }
+
+    if (field === 'contact') {
+        const contact = contactInput.value.trim();
+
+        if (!/^\d{10}$/.test(contact)) {
+            contactInput.style.borderColor = 'var(--error-red)';
+            contactError.textContent = '⚠ Contact must be exactly 10 digits';
+            contactError.style.display = 'block';
+            contactSuccess.style.display = 'none';
+            return false;
+        }
+
+        contactInput.style.borderColor = 'var(--success-green)';
+        contactError.style.display = 'none';
+        contactSuccess.style.display = 'block';
+        return true;
+    }
+
+    if (field === 'address') {
+        const address = addressInput.value.trim();
+        updateAddressCounter();
+
+        if (address.length < 10) {
+            addressInput.style.borderColor = 'var(--error-red)';
+            addressError.textContent = '⚠ Address must be at least 10 characters';
+            addressError.style.display = 'block';
+            addressSuccess.style.display = 'none';
+            return false;
+        } else if (address.length > 200) {
+            addressInput.style.borderColor = 'var(--error-red)';
+            addressError.textContent = '⚠ Address cannot exceed 200 characters';
+            addressError.style.display = 'block';
+            addressSuccess.style.display = 'none';
+            return false;
+        }
+
+        addressInput.style.borderColor = 'var(--success-green)';
+        addressError.style.display = 'none';
+        addressSuccess.style.display = 'block';
+        return true;
+    }
+}
+
+function updateAddressCounter() {
+    const addressInput = document.getElementById('editAddress');
+    const counter = document.getElementById('addressCounter');
+    if (addressInput && counter) {
+        const length = addressInput.value.length;
+        counter.textContent = `${length}/200`;
+        counter.style.color = length > 200 ? 'var(--error-red)' : 'var(--text-light)';
+    }
+}
+
+function cancelProfileEdit() {
+    // Check if there are unsaved changes
+    const nameInput = document.getElementById('editName');
+    const emailInput = document.getElementById('editEmail');
+    const contactInput = document.getElementById('editContact');
+    const addressInput = document.getElementById('editAddress');
+
+    const hasChanges =
+        nameInput.value !== originalProfileData.name ||
+        emailInput.value !== originalProfileData.email ||
+        contactInput.value !== originalProfileData.contact ||
+        addressInput.value !== originalProfileData.address;
+
+    if (hasChanges) {
+        const confirmCancel = confirm('You have unsaved changes. Are you sure you want to cancel?');
+        if (!confirmCancel) return;
+    }
+
+    isEditingProfile = false;
+    const content = document.getElementById('profileContent');
+    renderProfileView(originalProfileData, content);
+    showToast('Edit cancelled');
+}
+
+function saveProfileChanges() {
+    // Validate all fields
+    const isNameValid = validateProfileField('name');
+    const isEmailValid = validateProfileField('email');
+    const isContactValid = validateProfileField('contact');
+    const isAddressValid = validateProfileField('address');
+
+    if (!isNameValid || !isEmailValid || !isContactValid || !isAddressValid) {
+        showToast('Please fix all errors before saving', 'error');
+        return;
+    }
+
+    // Get updated values
+    const updatedData = {
+        name: document.getElementById('editName').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        contact: document.getElementById('editContact').value.trim(),
+        address: document.getElementById('editAddress').value.trim()
+    };
+
+    // Update in registrations
+    const registrations = JSON.parse(localStorage.getItem('registrations') || '[]');
+    const userIndex = registrations.findIndex(u => u.customerId === currentUser.customerId);
+
+    if (userIndex !== -1) {
+        registrations[userIndex] = {
+            ...registrations[userIndex],
+            ...updatedData,
+            lastUpdated: new Date().toISOString()
+        };
+
+        localStorage.setItem('registrations', JSON.stringify(registrations));
+
+        // Update currentUser session
+        currentUser = {
+            ...currentUser,
+            ...updatedData
+        };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        // Update display
+        isEditingProfile = false;
+        const content = document.getElementById('profileContent');
+        renderProfileView(registrations[userIndex], content);
+
+        showToast('Profile updated successfully! ✓');
+    } else {
+        showToast('Error updating profile', 'error');
+    }
+}
+
 function closeProfileModal() {
+    if (isEditingProfile) {
+        const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
+        if (!confirmClose) return;
+    }
+
+    isEditingProfile = false;
     document.getElementById('profileModal').classList.remove('show');
 }
 
